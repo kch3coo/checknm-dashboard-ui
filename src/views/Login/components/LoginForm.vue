@@ -92,21 +92,21 @@
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
         <el-form-item>
           <el-row :gutter="5" justify="space-between" style="width: 100%">
-            <el-col :span="8">
+            <!-- <el-col :span="8">
               <XButton
                 :title="t('login.btnMobile')"
                 class="w-[100%]"
                 @click="setLoginState(LoginStateEnum.MOBILE)"
               />
-            </el-col>
-            <el-col :span="8">
+            </el-col> -->
+            <!-- <el-col :span="8">
               <XButton
                 :title="t('login.btnQRCode')"
                 class="w-[100%]"
                 @click="setLoginState(LoginStateEnum.QR_CODE)"
               />
-            </el-col>
-            <el-col :span="8">
+            </el-col> -->
+            <el-col :span="24">
               <XButton
                 :title="t('login.btnRegister')"
                 class="w-[100%]"
@@ -116,7 +116,7 @@
           </el-row>
         </el-form-item>
       </el-col>
-      <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
+      <!-- <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
         <el-form-item>
           <div class="w-[100%] flex justify-between">
@@ -131,22 +131,7 @@
             />
           </div>
         </el-form-item>
-      </el-col>
-      <el-divider content-position="center">萌新必读</el-divider>
-      <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
-        <el-form-item>
-          <div class="w-[100%] flex justify-between">
-            <el-link href="https://doc.iocoder.cn/" target="_blank">📚开发指南</el-link>
-            <el-link href="https://doc.iocoder.cn/video/" target="_blank">🔥视频教程</el-link>
-            <el-link href="https://www.iocoder.cn/Interview/good-collection/" target="_blank">
-              ⚡面试手册
-            </el-link>
-            <el-link href="http://static.yudao.iocoder.cn/mp/Aix9975.jpeg" target="_blank">
-              🤝外包咨询
-            </el-link>
-          </div>
-        </el-form-item>
-      </el-col>
+      </el-col> -->
     </el-row>
   </el-form>
 </template>
