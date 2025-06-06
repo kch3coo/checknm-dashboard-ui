@@ -6,11 +6,11 @@ export interface SensorInfoVO {
   uuid: string // UUID
   mac: string // MAC
   gatewayMac: string // 网关MAC
-  type: number // 类型：0：WIRED；1：WIRELESS
+  type: number // 类型
   producer: string // 厂商
   qrCode: string // 二维码
-  version: string // 版本信息：KSCM-M12
-  status: number // 状态：0：CONNECT；1：DISCONNECT；2：DISABLED
+  version: string // 版本信息
+  status: number // 状态
 }
 
 // 传感器信息 API

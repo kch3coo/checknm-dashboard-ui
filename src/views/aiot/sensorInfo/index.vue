@@ -35,14 +35,14 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="类型：0：WIRED；1：WIRELESS" prop="type">
-        <el-select
-          v-model="queryParams.type"
-          placeholder="请选择类型：0：WIRED；1：WIRELESS"
-          clearable
-          class="!w-240px"
-        >
-          <el-option label="请选择字典生成" value="" />
+      <el-form-item label="类型" prop="type">
+        <el-select v-model="queryParams.type" placeholder="请选择类型" clearable class="!w-240px">
+          <el-option
+            v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_SENSOR_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="厂商" prop="producer">
@@ -63,23 +63,23 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="版本信息：KSCM-M12" prop="version">
+      <el-form-item label="版本信息" prop="version">
         <el-input
           v-model="queryParams.version"
-          placeholder="请输入版本信息：KSCM-M12"
+          placeholder="请输入版本信息"
           clearable
           @keyup.enter="handleQuery"
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="状态：0：CONNECT；1：DISCONNECT；2：DISABLED" prop="status">
-        <el-select
-          v-model="queryParams.status"
-          placeholder="请选择状态：0：CONNECT；1：DISCONNECT；2：DISABLED"
-          clearable
-          class="!w-240px"
-        >
-          <el-option label="请选择字典生成" value="" />
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable class="!w-240px">
+          <el-option
+            v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_SENSOR_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -113,15 +113,19 @@
       <el-table-column label="UUID" align="center" prop="uuid" />
       <el-table-column label="MAC" align="center" prop="mac" />
       <el-table-column label="网关MAC" align="center" prop="gatewayMac" />
-      <el-table-column label="类型：0：WIRED；1：WIRELESS" align="center" prop="type" />
+      <el-table-column label="类型" align="center" prop="type">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.AIOT_SENSOR_TYPE" :value="scope.row.type" />
+        </template>
+      </el-table-column>
       <el-table-column label="厂商" align="center" prop="producer" />
       <el-table-column label="二维码" align="center" prop="qrCode" />
-      <el-table-column label="版本信息：KSCM-M12" align="center" prop="version" />
-      <el-table-column
-        label="状态：0：CONNECT；1：DISCONNECT；2：DISABLED"
-        align="center"
-        prop="status"
-      />
+      <el-table-column label="版本信息" align="center" prop="version" />
+      <el-table-column label="状态" align="center" prop="status">
+        <template #default="scope">
+          <dict-tag :type="DICT_TYPE.AIOT_SENSOR_STATUS" :value="scope.row.status" />
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" min-width="120px">
         <template #default="scope">
           <el-button
@@ -157,8 +161,9 @@
 </template>
 
 <script setup lang="ts">
+import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
 import download from '@/utils/download'
-import { SensorInfoApi, SensorInfoVO } from '@/api/aiot/sensorinfo'
+import { SensorInfoApi, SensorInfoVO } from '@/api/aiot/sensorInfo'
 import SensorInfoForm from './SensorInfoForm.vue'
 
 /** 传感器信息 列表 */

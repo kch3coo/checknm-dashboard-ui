@@ -245,5 +245,9 @@ export enum DICT_TYPE {
   IOT_PLUGIN_STATUS = 'iot_plugin_status', // IOT 插件状态
   IOT_PLUGIN_TYPE = 'iot_plugin_type', // IOT 插件类型
   IOT_DATA_BRIDGE_DIRECTION_ENUM = 'iot_data_bridge_direction_enum', // 桥梁方向
-  IOT_DATA_BRIDGE_TYPE_ENUM = 'iot_data_bridge_type_enum' // 桥梁类型
+  IOT_DATA_BRIDGE_TYPE_ENUM = 'iot_data_bridge_type_enum', // 桥梁类型
+
+  // ========== AIOT - CheckNM模块  ==========
+  AIOT_SENSOR_STATUS = 'aiot_sensor_status', // 传感器状态
+  AIOT_SENSOR_TYPE = 'aiot_sensor_type' // 传感器类型
 }

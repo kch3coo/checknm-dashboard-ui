@@ -16,9 +16,14 @@
       <el-form-item label="网关MAC" prop="gatewayMac">
         <el-input v-model="formData.gatewayMac" placeholder="请输入网关MAC" />
       </el-form-item>
-      <el-form-item label="类型：0：WIRED；1：WIRELESS" prop="type">
-        <el-select v-model="formData.type" placeholder="请选择类型：0：WIRED；1：WIRELESS">
-          <el-option label="请选择字典生成" value="" />
+      <el-form-item label="类型" prop="type">
+        <el-select v-model="formData.type" placeholder="请选择类型">
+          <el-option
+            v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_SENSOR_TYPE)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="厂商" prop="producer">
@@ -27,13 +32,18 @@
       <el-form-item label="二维码" prop="qrCode">
         <el-input v-model="formData.qrCode" placeholder="请输入二维码" />
       </el-form-item>
-      <el-form-item label="版本信息：KSCM-M12" prop="version">
-        <el-input v-model="formData.version" placeholder="请输入版本信息：KSCM-M12" />
+      <el-form-item label="版本信息" prop="version">
+        <el-input v-model="formData.version" placeholder="请输入版本信息" />
       </el-form-item>
-      <el-form-item label="状态：0：CONNECT；1：DISCONNECT；2：DISABLED" prop="status">
-        <el-radio-group v-model="formData.status">
-          <el-radio value="1">请选择字典生成</el-radio>
-        </el-radio-group>
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="formData.status" placeholder="请选择状态">
+          <el-option
+            v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_SENSOR_STATUS)"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -43,7 +53,8 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { SensorInfoApi, SensorInfoVO } from '@/api/aiot/sensorinfo'
+import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
+import { SensorInfoApi, SensorInfoVO } from '@/api/aiot/sensorInfo'
 
 /** 传感器信息 表单 */
 defineOptions({ name: 'SensorInfoForm' })
@@ -69,18 +80,10 @@ const formData = ref({
 const formRules = reactive({
   uuid: [{ required: true, message: 'UUID不能为空', trigger: 'blur' }],
   mac: [{ required: true, message: 'MAC不能为空', trigger: 'blur' }],
-  gatewayMac: [{ required: true, message: '网关MAC不能为空', trigger: 'blur' }],
-  type: [{ required: true, message: '类型：0：WIRED；1：WIRELESS不能为空', trigger: 'change' }],
+  type: [{ required: true, message: '类型不能为空', trigger: 'change' }],
   producer: [{ required: true, message: '厂商不能为空', trigger: 'blur' }],
   qrCode: [{ required: true, message: '二维码不能为空', trigger: 'blur' }],
-  version: [{ required: true, message: '版本信息：KSCM-M12不能为空', trigger: 'blur' }],
-  status: [
-    {
-      required: true,
-      message: '状态：0：CONNECT；1：DISCONNECT；2：DISABLED不能为空',
-      trigger: 'blur'
-    }
-  ]
+  status: [{ required: true, message: '状态不能为空', trigger: 'change' }]
 })
 const formRef = ref() // 表单 Ref
 
