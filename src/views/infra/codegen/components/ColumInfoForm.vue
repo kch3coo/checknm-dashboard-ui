@@ -27,6 +27,7 @@
           <el-option label="BigDecimal" value="BigDecimal" />
           <el-option label="LocalDateTime" value="LocalDateTime" />
           <el-option label="Boolean" value="Boolean" />
+          <el-option label="Blob" value="Blob" />
         </el-select>
       </template>
     </el-table-column>

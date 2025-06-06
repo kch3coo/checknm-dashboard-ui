@@ -81,7 +81,6 @@ const formRules = reactive({
   uuid: [{ required: true, message: 'UUID不能为空', trigger: 'blur' }],
   mac: [{ required: true, message: 'MAC不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '类型不能为空', trigger: 'change' }],
-  producer: [{ required: true, message: '厂商不能为空', trigger: 'blur' }],
   qrCode: [{ required: true, message: '二维码不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '状态不能为空', trigger: 'change' }]
 })
