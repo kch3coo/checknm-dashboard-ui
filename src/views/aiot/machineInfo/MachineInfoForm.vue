@@ -23,18 +23,7 @@
         <el-input v-model="formData.deviceType" placeholder="请输入设备类型" />
       </el-form-item>
       <el-form-item label="设备图片" prop="deviceImage">
-        <UploadImg v-model="formData.deviceImage" />
-      </el-form-item>
-      <el-form-item label="最新检测时间" prop="lastCheckTime">
-        <el-date-picker
-          v-model="formData.lastCheckTime"
-          type="date"
-          value-format="x"
-          placeholder="选择最新检测时间"
-        />
-      </el-form-item>
-      <el-form-item label="最新检测人员" prop="lastMaintainer">
-        <el-input v-model="formData.lastMaintainer" placeholder="请输入最新检测人员" />
+        <UploadLocalImg v-model="formData.deviceImage" />
       </el-form-item>
     </el-form>
     <!-- 子表的表单 -->
@@ -71,8 +60,7 @@ const formData = ref({
   deviceName: undefined,
   deviceType: undefined,
   deviceImage: undefined,
-  lastCheckTime: undefined,
-  lastMaintainer: undefined
+  machineLocationInfos: []
 })
 const formRules = reactive({
   companyName: [{ required: true, message: '公司名称不能为空', trigger: 'blur' }],
@@ -118,14 +106,29 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value as unknown as MachineInfoVO
-    // 拼接子表的数据
-    data.machineLocationInfos = machineLocationInfoFormRef.value.getData()
+    console.log(formData.value)
+    const machineInfoVO: MachineInfoVO = {
+      id: formData.value.id!,
+      companyName: formData.value.companyName!,
+      factoryName: formData.value.factoryName!,
+      productLine: formData.value.productLine!,
+      deviceName: formData.value.deviceName!,
+      deviceType: formData.value.deviceType!,
+      deviceImage: [], // 占位，后面赋值
+      machineLocationInfos: machineLocationInfoFormRef.value.getData()
+    }
+
+    if (formData.value.deviceImage) {
+      const buffer = await (formData.value.deviceImage as File).arrayBuffer()
+      const uint8 = new Uint8Array(buffer)
+      machineInfoVO.deviceImage = Array.from(uint8)
+    }
+
     if (formType.value === 'create') {
-      await MachineInfoApi.createMachineInfo(data)
+      await MachineInfoApi.createMachineInfo(machineInfoVO)
       message.success(t('common.createSuccess'))
     } else {
-      await MachineInfoApi.updateMachineInfo(data)
+      await MachineInfoApi.updateMachineInfo(machineInfoVO)
       message.success(t('common.updateSuccess'))
     }
     dialogVisible.value = false
@@ -146,8 +149,7 @@ const resetForm = () => {
     deviceName: undefined,
     deviceType: undefined,
     deviceImage: undefined,
-    lastCheckTime: undefined,
-    lastMaintainer: undefined
+    machineLocationInfos: []
   }
   formRef.value?.resetFields()
 }

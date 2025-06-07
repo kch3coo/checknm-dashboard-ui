@@ -1,13 +1,16 @@
 import request from '@/config/axios'
+import { MachineLocationInfoVO } from '../machineLocationInfo'
 
 // 设备信息 VO
 export interface MachineInfoVO {
+  id: number //设备ID
   companyName: string // 公司名称
   factoryName: string // 工厂名称
   productLine: string // 设备产线
   deviceName: string // 设备名称
   deviceType: string // 设备类型
-  deviceImage: Blob // 设备图片
+  deviceImage: number[] // 设备图片
+  machineLocationInfos: MachineLocationInfoVO[]
 }
 
 // 设备信息 API

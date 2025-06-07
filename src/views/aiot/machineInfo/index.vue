@@ -8,6 +8,15 @@
       :inline="true"
       label-width="68px"
     >
+      <el-form-item label="设备id" prop="id">
+        <el-input
+          v-model="queryParams.id"
+          placeholder="请输入设备id"
+          clearable
+          @keyup.enter="handleQuery"
+          class="!w-240px"
+        />
+      </el-form-item>
       <el-form-item label="公司名称" prop="companyName">
         <el-input
           v-model="queryParams.companyName"
@@ -111,12 +120,21 @@
   <!-- 列表 -->
   <ContentWrap>
     <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table-column label="设备图片" align="center">
+        <template #default="{ row }">
+          <img
+            v-if="row.deviceImageUrl"
+            :src="row.deviceImageUrl"
+            style="max-height: 60px; max-width: 100px"
+            alt="设备图片"
+          />
+        </template>
+      </el-table-column>
       <el-table-column label="公司名称" align="center" prop="companyName" />
       <el-table-column label="工厂名称" align="center" prop="factoryName" />
       <el-table-column label="设备产线" align="center" prop="productLine" />
       <el-table-column label="设备名称" align="center" prop="deviceName" />
       <el-table-column label="设备类型" align="center" prop="deviceType" />
-      <el-table-column label="设备图片" align="center" prop="deviceImage" />
       <el-table-column
         label="最新检测时间"
         align="center"
@@ -184,6 +202,7 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
+  id: undefined,
   companyName: undefined,
   factoryName: undefined,
   productLine: undefined,
@@ -202,7 +221,13 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await MachineInfoApi.getMachineInfoPage(queryParams)
-    list.value = data.list
+    console.log(data)
+    list.value = data.list.map((item) => ({
+      ...item,
+      deviceImageUrl: item.deviceImage
+        ? `data:image/png;base64,${item.deviceImage}` // or 'image/png'
+        : ''
+    }))
     total.value = data.total
   } finally {
     loading.value = false
