@@ -249,5 +249,8 @@ export enum DICT_TYPE {
 
   // ========== AIOT - CheckNM模块  ==========
   AIOT_SENSOR_STATUS = 'aiot_sensor_status', // 传感器状态
-  AIOT_SENSOR_TYPE = 'aiot_sensor_type' // 传感器类型
+  AIOT_SENSOR_TYPE = 'aiot_sensor_type', // 传感器类型
+  AIOT_QRCODE_TYPE = 'aiot_qrcode_type', // 二维码类型
+  AIOT_QRCODE_STATUS = 'aiot_qrcode_status' // 二维码状态
+
 }
