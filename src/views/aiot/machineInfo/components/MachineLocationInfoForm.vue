@@ -8,7 +8,13 @@
     :inline-message="true"
   >
     <el-table :data="formData" class="-mt-10px">
-      <el-table-column label="序号" type="index" width="100" />
+      <el-table-column label="设备位置图片" min-width="200">
+        <template #default="{ row, $index }">
+          <el-form-item :prop="`${$index}.locationImage`" class="mb-0px!">
+            <UploadLocalImg v-model="row.locationImage" />
+          </el-form-item>
+        </template>
+      </el-table-column>
       <el-table-column label="设备位置二维码" min-width="150">
         <template #default="{ row, $index }">
           <el-form-item :prop="`${$index}.qrCode`" :rules="formRules.qrCode" class="mb-0px!">
@@ -31,25 +37,6 @@
             class="mb-0px!"
           >
             <el-input v-model="row.locationInfo" placeholder="请输入设备位置" />
-          </el-form-item>
-        </template>
-      </el-table-column>
-      <el-table-column label="公司名称" min-width="150">
-        <template #default="{ row, $index }">
-          <el-form-item :prop="`${$index}.lastCheckTime`" class="mb-0px!">
-            <el-date-picker
-              v-model="row.lastCheckTime"
-              type="date"
-              value-format="x"
-              placeholder="选择公司名称"
-            />
-          </el-form-item>
-        </template>
-      </el-table-column>
-      <el-table-column label="设备位置图片" min-width="200">
-        <template #default="{ row, $index }">
-          <el-form-item :prop="`${$index}.locationImage`" class="mb-0px!">
-            <UploadImg v-model="row.locationImage" />
           </el-form-item>
         </template>
       </el-table-column>
@@ -93,7 +80,10 @@ watch(
     try {
       formLoading.value = true
       const fullList = await MachineInfoApi.getMachineLocationInfoListByMachineId(val)
-      formData.value = fullList.map((item) => ({ ...item }))
+      formData.value = fullList.map((item) => ({
+        ...item,
+        locationImage: item.locationImage
+      }))
     } finally {
       formLoading.value = false
     }

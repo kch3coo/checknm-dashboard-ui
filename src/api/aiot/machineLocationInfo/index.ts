@@ -9,7 +9,7 @@ export interface MachineLocationInfoVO {
   latestResult: number // 最新检测结果
   lastCheckTime: Date // 最新检测时间
   lastMaintainer: string // 最新检测人员
-  locationImage: Blob // 设备位置图片
+  locationImage: number[] // 设备位置图片
 }
 
 // 设备位置信息 API

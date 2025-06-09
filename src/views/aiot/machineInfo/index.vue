@@ -189,6 +189,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { MachineInfoApi, MachineInfoVO } from '@/api/aiot/machineInfo'
 import MachineInfoForm from './MachineInfoForm.vue'
+import { makeDataUrl } from '@/components/UploadFile/src/uploadImgUtil'
 
 /** 设备信息 列表 */
 defineOptions({ name: 'MachineInfo' })
@@ -224,9 +225,7 @@ const getList = async () => {
     console.log(data)
     list.value = data.list.map((item) => ({
       ...item,
-      deviceImageUrl: item.deviceImage
-        ? `data:image/png;base64,${item.deviceImage}` // or 'image/png'
-        : ''
+      deviceImageUrl: makeDataUrl(item.deviceImage)
     }))
     total.value = data.total
   } finally {

@@ -115,13 +115,23 @@ const submitForm = async () => {
       deviceName: formData.value.deviceName!,
       deviceType: formData.value.deviceType!,
       deviceImage: [], // 占位，后面赋值
-      machineLocationInfos: machineLocationInfoFormRef.value.getData()
+      machineLocationInfos: []
     }
+    console.log(machineInfoVO)
 
+    // 获取子表数据并立即转换 locationImage
+    const locationInfos = machineLocationInfoFormRef.value.getData()
+    machineInfoVO.machineLocationInfos = await Promise.all(
+      locationInfos.map(async (info) => {
+        // 转换 Blob -> number[]
+        info.locationImage = await toNumberArray(info.locationImage)
+        return info
+      })
+    )
+
+    // 转换 deviceImage
     if (formData.value.deviceImage) {
-      const buffer = await (formData.value.deviceImage as File).arrayBuffer()
-      const uint8 = new Uint8Array(buffer)
-      machineInfoVO.deviceImage = Array.from(uint8)
+      machineInfoVO.deviceImage = await toNumberArray(formData.value.deviceImage)
     }
 
     if (formType.value === 'create') {
@@ -137,6 +147,24 @@ const submitForm = async () => {
   } finally {
     formLoading.value = false
   }
+}
+async function toNumberArray(img: Blob | string | number[] | null): Promise<number[]> {
+  if (img instanceof Blob) {
+    const buf = await img.arrayBuffer()
+    return Array.from(new Uint8Array(buf))
+  }
+  if (typeof img === 'string') {
+    // 如果带前缀，去掉前缀；否则就当纯 Base64
+    const base64 = img.includes(',') ? img.split(',')[1] : img
+    // atob 解码成二进制串
+    const binStr = atob(base64)
+    // 每个字符的 charCode 就是对应的字节
+    return Array.from(binStr).map((ch) => ch.charCodeAt(0))
+  }
+  if (Array.isArray(img)) {
+    return img
+  }
+  return []
 }
 
 /** 重置表单 */
