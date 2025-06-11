@@ -312,9 +312,10 @@ const handleExport = async () => {
 }
 
 /** 选中行操作 */
-const currentRow = ref({}) // 选中行
+const currentRow = ref<Partial<MeasurementTasksVO>>({}) // 选中行
 const handleCurrentChange = (row) => {
   currentRow.value = row
+  console.log(currentRow.value)
 }
 
 /** 初始化 **/

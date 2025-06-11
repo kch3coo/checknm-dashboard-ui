@@ -11,6 +11,7 @@
     </el-button>
     <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
       <el-table-column label="传感器ID" align="center" prop="sensorId" />
+
       <el-table-column
         label="数据采集时间"
         align="center"
@@ -117,7 +118,7 @@ const openForm = (type: string, id?: number) => {
     message.error('请选择一个检测任务记录')
     return
   }
-  formRef.value.open(type, id, props.taskId)
+  formRef.value.open(type, props.taskId, id)
 }
 
 /** 删除按钮操作 */

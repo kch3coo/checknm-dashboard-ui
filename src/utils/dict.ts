@@ -251,6 +251,8 @@ export enum DICT_TYPE {
   AIOT_SENSOR_STATUS = 'aiot_sensor_status', // 传感器状态
   AIOT_SENSOR_TYPE = 'aiot_sensor_type', // 传感器类型
   AIOT_QRCODE_TYPE = 'aiot_qrcode_type', // 二维码类型
-  AIOT_QRCODE_STATUS = 'aiot_qrcode_status' // 二维码状态
-
+  AIOT_QRCODE_STATUS = 'aiot_qrcode_status', // 二维码状态
+  AIOT_MEASUREMENT_TASK_STATUS = 'aiot_measurement_task_status', // 测量任务状态
+  AIOT_MEASUREMENT_TASK_TYPE = 'aiot_measurement_task_type', // 测量任务类型
+  AIOT_MEASUREMENT_TASK_METHOD = 'aiot_measurement_task_method' // 测量任务方法
 }

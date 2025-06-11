@@ -2,8 +2,8 @@ import request from '@/config/axios'
 
 // 检测任务记录 VO
 export interface MeasurementTasksVO {
-  sensorId: number // 传感器id
   id: number // 任务id
+  sensorId: number // 传感器id
   machineLocationId: number // 设备位置id
   maintainer: string // 检测人员
   type: number // 检测类型

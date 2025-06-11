@@ -27,14 +27,15 @@
         </el-select>
       </el-form-item>
       <el-form-item label="检测方法" prop="method">
-        <el-select v-model="formData.method" placeholder="请选择检测方法">
-          <el-option
+        <el-radio-group v-model="formData.method">
+          <el-radio
             v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_MEASUREMENT_TASK_METHOD)"
             :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
+            :label="dict.value"
+          >
+            {{ dict.label }}
+          </el-radio>
+        </el-radio-group>
       </el-form-item>
       <el-form-item label="开始时间" prop="startTime">
         <el-date-picker
@@ -53,15 +54,14 @@
         />
       </el-form-item>
       <el-form-item label="检测状态" prop="status">
-        <el-radio-group v-model="formData.status">
-          <el-radio
+        <el-select v-model="formData.status" placeholder="请选择检测状态">
+          <el-option
             v-for="dict in getIntDictOptions(DICT_TYPE.AIOT_MEASUREMENT_TASK_STATUS)"
             :key="dict.value"
-            :label="dict.value"
-          >
-            {{ dict.label }}
-          </el-radio>
-        </el-radio-group>
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
     </el-form>
     <template #footer>

@@ -7,6 +7,9 @@
       label-width="100px"
       v-loading="formLoading"
     >
+      <el-form-item label="传感器ID" prop="sensorId">
+        <el-input v-model="formData.sensorId" placeholder="请输入传感器ID" />
+      </el-form-item>
       <el-form-item label="数据采集时间" prop="timestamp">
         <el-date-picker
           v-model="formData.timestamp"
@@ -51,6 +54,7 @@
 </template>
 <script setup lang="ts">
 import { MeasurementTasksApi } from '@/api/aiot/measurementTasks'
+import { VibrationRecordsVO } from '@/api/aiot/vibrationRecords'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -59,35 +63,30 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
-const formData = ref({
-  sensorId: undefined,
-  taskId: undefined,
-  timestamp: undefined,
-  xAxisRms: undefined,
-  yAxisRms: undefined,
-  zAxisRms: undefined,
-  xAxisMaRms: undefined,
-  yAxisMaRms: undefined,
-  zAxisMaRms: undefined,
-  xAxisPeakToPeak: undefined,
-  yAxisPeakToPeak: undefined,
-  zAxisPeakToPeak: undefined
+const formData = reactive<Partial<VibrationRecordsVO>>({})
+const formRules = reactive({
+  sensorId: [{ required: true, message: '传感器ID不能为空', trigger: 'blur' }],
+  taskId: [{ required: true, message: '任务ID不能为空', trigger: 'blur' }],
+  timestamp: [{ required: true, message: '数据采集时间不能为空', trigger: 'blur' }]
 })
-const formRules = reactive({})
 const formRef = ref() // 表单 Ref
 
-/** 打开弹窗 */
-const open = async (type: string, id?: number, taskId: number) => {
+/** 打开弹窗
+ * @param type   - create 或 update
+ * @param taskId - 父级任务 ID，必填
+ * @param id     - 如果是 update，就传要编辑的记录 ID；create 时不传
+ */
+const open = async (type: 'create' | 'update', taskId: number, id?: number) => {
   dialogVisible.value = true
   dialogTitle.value = t('action.' + type)
   formType.value = type
-  resetForm()
-  formData.value.taskId = taskId
+  resetForm(taskId)
   // 修改时，设置数据
   if (id) {
     formLoading.value = true
     try {
-      formData.value = await MeasurementTasksApi.getVibrationRecords(id)
+      const data = await MeasurementTasksApi.getVibrationRecords(id)
+      Object.assign(formData, data)
     } finally {
       formLoading.value = false
     }
@@ -103,7 +102,7 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value
+    const data = formData
     if (formType.value === 'create') {
       await MeasurementTasksApi.createVibrationRecords(data)
       message.success(t('common.createSuccess'))
@@ -120,10 +119,11 @@ const submitForm = async () => {
 }
 
 /** 重置表单 */
-const resetForm = () => {
-  formData.value = {
+const resetForm = (keepTaskId?: number) => {
+  Object.assign(formData, {
+    id: undefined,
     sensorId: undefined,
-    taskId: undefined,
+    taskId: keepTaskId ?? undefined,
     timestamp: undefined,
     xAxisRms: undefined,
     yAxisRms: undefined,
@@ -134,7 +134,7 @@ const resetForm = () => {
     xAxisPeakToPeak: undefined,
     yAxisPeakToPeak: undefined,
     zAxisPeakToPeak: undefined
-  }
+  })
   formRef.value?.resetFields()
 }
 </script>
