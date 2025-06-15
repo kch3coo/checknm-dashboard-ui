@@ -109,6 +109,13 @@
           <el-button
             link
             type="primary"
+            @click="preview(scope.row.info)"
+          >
+            预览
+          </el-button>
+          <el-button
+            link
+            type="primary"
             @click="openForm('update', scope.row.id)"
             v-hasPermi="['aiot:qrcode-info:update']"
           >
@@ -136,6 +143,24 @@
 
   <!-- 表单弹窗：添加/修改 -->
   <QrcodeInfoForm ref="formRef" @success="getList" />
+
+  <!-- 二维码预览弹窗 -->
+  <el-dialog
+    v-model="previewVisible"
+    title="二维码预览"
+    width="400px"
+    :close-on-click-modal="false"
+  >
+    <div class="flex justify-center items-center" style="flex-direction: column">
+      <qrcode-vue :value="qrcodeValue" :size="300" level="H" render-as="canvas"/>
+        <el-button
+          type="primary"
+          @click="downloadQRCode"
+          style="margin-top: 10px"
+        >下载二维码
+        </el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -144,6 +169,7 @@ import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { QrcodeInfoApi, QrcodeInfoVO } from '@/api/aiot/qrcodeinfo'
 import QrcodeInfoForm from './QrcodeInfoForm.vue'
+import QrcodeVue from 'qrcode.vue'
 
 /** 二维码信息 列表 */
 defineOptions({ name: 'QrcodeInfo' })
@@ -221,6 +247,29 @@ const handleExport = async () => {
   } finally {
     exportLoading.value = false
   }
+}
+
+
+/** 二维码预览弹窗 */
+const previewVisible = ref(false) // 二维码预览弹窗的是否展示
+const qrcodeValue = ref('') // 二维码预览的值
+const preview = (info: string) => {
+  qrcodeValue.value = info
+  previewVisible.value = true
+}
+/** 下载二维码 */
+const downloadQRCode = () => {
+  // 获取二维码canvas
+  const canvas = document.querySelector('.el-dialog canvas') as HTMLCanvasElement
+  if (!canvas) {
+    message.error('二维码预览未生成，请先预览二维码')
+    return
+  }
+  const url = canvas.toDataURL('image/png')
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'qrcode.png'
+  a.click()
 }
 
 /** 初始化 **/
