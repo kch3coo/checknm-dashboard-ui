@@ -212,9 +212,12 @@
   <MeasurementTasksForm ref="formRef" @success="getList" />
   <!-- 子表的列表 -->
   <ContentWrap>
-    <el-tabs model-value="vibrationRecords">
+    <el-tabs v-model="activeTab">
       <el-tab-pane label="振动传感记录" name="vibrationRecords">
         <VibrationRecordsList :task-id="currentRow.id" />
+      </el-tab-pane>
+      <el-tab-pane label="振动图表" name="vibrationGraph">
+        <VibrationGraph :task-id="currentRow.id" />
       </el-tab-pane>
     </el-tabs>
   </ContentWrap>
@@ -227,6 +230,7 @@ import download from '@/utils/download'
 import { MeasurementTasksApi, MeasurementTasksVO } from '@/api/aiot/measurementTasks'
 import MeasurementTasksForm from './MeasurementTasksForm.vue'
 import VibrationRecordsList from './components/VibrationRecordsList.vue'
+import VibrationGraph from './components/VibrationGraph.vue'
 
 /** 检测任务记录 列表 */
 defineOptions({ name: 'MeasurementTasks' })
@@ -252,6 +256,7 @@ const queryParams = reactive({
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+const activeTab = ref('vibrationRecords')
 
 /** 查询列表 */
 const getList = async () => {
