@@ -56,6 +56,11 @@ export const MeasurementTasksApi = {
     return await request.post({ url: `/aiot/measurement-tasks/vibration-records/create`, data })
   },
 
+  // 批量新增振动传感记录
+  batchCreateVibrationRecords: async (data) => {
+    return await request.post({ url: `/aiot/measurement-tasks/vibration-records/batch-create`, data })
+  },
+
   // 修改振动传感记录
   updateVibrationRecords: async (data) => {
     return await request.put({ url: `/aiot/measurement-tasks/vibration-records/update`, data })

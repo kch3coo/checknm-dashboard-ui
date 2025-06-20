@@ -214,7 +214,10 @@
   <ContentWrap>
     <el-tabs v-model="activeTab">
       <el-tab-pane label="振动传感记录" name="vibrationRecords">
-        <VibrationRecordsList :task-id="currentRow.id" />
+        <VibrationRecordsList
+          :task-id="currentRow.id"
+          :sensor-id="currentRow.sensorId"
+        />
       </el-tab-pane>
       <el-tab-pane label="振动图表" name="vibrationGraph">
         <VibrationGraph :task-id="currentRow.id" />
