@@ -73,14 +73,20 @@ const formRef = ref() // 表单 Ref
 
 /** 打开弹窗
  * @param type   - create 或 update
- * @param taskId - 父级任务 ID，必填
- * @param id     - 如果是 update，就传要编辑的记录 ID；create 时不传
+ * @param taskId   - 父级任务 ID，必填
+ * @param sensorId - 传感器 ID，必填
+ * @param id       - 如果是 update，就传要编辑的记录 ID；create 时不传
  */
-const open = async (type: 'create' | 'update', taskId: number, id?: number) => {
+const open = async (
+  type: 'create' | 'update',
+  taskId: number,
+  sensorId: number,
+  id?: number
+) => {
   dialogVisible.value = true
   dialogTitle.value = t('action.' + type)
   formType.value = type
-  resetForm(taskId)
+  resetForm(taskId, sensorId)
   // 修改时，设置数据
   if (id) {
     formLoading.value = true
@@ -119,10 +125,10 @@ const submitForm = async () => {
 }
 
 /** 重置表单 */
-const resetForm = (keepTaskId?: number) => {
+const resetForm = (keepTaskId?: number, keepSensorId?: number) => {
   Object.assign(formData, {
     id: undefined,
-    sensorId: undefined,
+    sensorId: keepSensorId ?? undefined,
     taskId: keepTaskId ?? undefined,
     timestamp: undefined,
     xAxisRms: undefined,

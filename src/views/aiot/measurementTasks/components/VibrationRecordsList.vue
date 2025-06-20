@@ -9,6 +9,15 @@
     >
       <Icon icon="ep:plus" class="mr-5px" /> 新增
     </el-button>
+    <el-button
+      v-if="total === 0"
+      type="warning"
+      plain
+      @click="handleImport"
+      v-hasPermi="['aiot:measurement-tasks:create']"
+    >
+      <Icon icon="ep:upload" class="mr-5px" /> 导入
+    </el-button>
     <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
       <el-table-column label="传感器ID" align="center" prop="sensorId" />
 
@@ -59,17 +68,26 @@
   </ContentWrap>
   <!-- 表单弹窗：添加/修改 -->
   <VibrationRecordsForm ref="formRef" @success="getList" />
+  <!-- 导入弹窗 -->
+  <VibrationRecordsImportForm
+    :task-id="props.taskId!"
+    :sensor-id="props.sensorId!"
+    ref="importRef"
+    @success="getList"
+  />
 </template>
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import { MeasurementTasksApi } from '@/api/aiot/measurementTasks'
 import VibrationRecordsForm from './VibrationRecordsForm.vue'
+import VibrationRecordsImportForm from './VibrationRecordsImportForm.vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
 const props = defineProps<{
   taskId?: number // 任务ID（主表的关联字段）
+  sensorId?: number // 传感器ID（主表字段）
 }>()
 const loading = ref(false) // 列表的加载中
 const list = ref([]) // 列表的数据
@@ -113,12 +131,22 @@ const handleQuery = () => {
 
 /** 添加/修改操作 */
 const formRef = ref()
+const importRef = ref()
 const openForm = (type: string, id?: number) => {
-  if (!props.taskId) {
+  if (!props.taskId || !props.sensorId) {
     message.error('请选择一个检测任务记录')
     return
   }
-  formRef.value.open(type, props.taskId, id)
+  formRef.value.open(type, props.taskId, props.sensorId, id)
+}
+
+/** 导入按钮操作 */
+const handleImport = () => {
+  if (!props.taskId || !props.sensorId) {
+    message.error('请选择一个检测任务记录')
+    return
+  }
+  importRef.value.open()
 }
 
 /** 删除按钮操作 */
