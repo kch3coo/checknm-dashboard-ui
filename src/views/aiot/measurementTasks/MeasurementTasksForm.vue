@@ -37,7 +37,7 @@
           </el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="开始时间" prop="startTime">
+      <el-form-item v-if="formType !== 'create'" label="开始时间" prop="startTime">
         <el-date-picker
           v-model="formData.startTime"
           type="date"
@@ -45,7 +45,7 @@
           placeholder="选择开始时间"
         />
       </el-form-item>
-      <el-form-item label="结束时间" prop="endTime">
+      <el-form-item v-if="formType !== 'create'" label="结束时间" prop="endTime">
         <el-date-picker
           v-model="formData.endTime"
           type="date"
@@ -100,8 +100,8 @@ const formRules = reactive({
   machineLocationId: [{ required: true, message: '设备位置id不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '检测类型不能为空', trigger: 'change' }],
   method: [{ required: true, message: '检测方法不能为空', trigger: 'change' }],
-  startTime: [{ required: true, message: '开始时间不能为空', trigger: 'blur' }],
-  endTime: [{ required: true, message: '结束时间不能为空', trigger: 'blur' }]
+  startTime: [] as any[],
+  endTime: [] as any[]
 })
 const formRef = ref() // 表单 Ref
 
@@ -111,6 +111,13 @@ const open = async (type: string, id?: number) => {
   dialogTitle.value = t('action.' + type)
   formType.value = type
   resetForm()
+  if (type === 'create') {
+    formRules.startTime = []
+    formRules.endTime = []
+  } else {
+    formRules.startTime = [{ required: true, message: '开始时间不能为空', trigger: 'blur' }]
+    formRules.endTime = [{ required: true, message: '结束时间不能为空', trigger: 'blur' }]
+  }
   // 修改时，设置数据
   if (id) {
     formLoading.value = true

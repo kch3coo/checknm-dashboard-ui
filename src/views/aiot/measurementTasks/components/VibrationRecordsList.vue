@@ -37,7 +37,7 @@
       <el-table-column label="X轴峰值-峰值" align="center" prop="xAxisPeakToPeak" />
       <el-table-column label="Y轴峰值-峰值" align="center" prop="yAxisPeakToPeak" />
       <el-table-column label="Z轴峰值-峰值" align="center" prop="zAxisPeakToPeak" />
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" align="center" min-width="120px">
         <template #default="scope">
           <el-button
             link
