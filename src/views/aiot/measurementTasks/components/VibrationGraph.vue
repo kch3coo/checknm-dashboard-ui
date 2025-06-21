@@ -53,7 +53,9 @@ const loadData = async () => {
       taskId: props.taskId
     })
     const list = data.list || []
-    chartOptions.xAxis!['data'] = list.map((item: any) => formatDate(item.timestamp, 'MM-DD HH:mm'))
+    chartOptions.xAxis!['data'] = list.map((item: any) =>
+      formatDate(item.timestamp, 'MM-DD HH:mm:ss')
+    )
     const map = {
       RMS: ['xAxisRms', 'yAxisRms', 'zAxisRms'],
       RMSMA: ['xAxisMaRms', 'yAxisMaRms', 'zAxisMaRms'],
