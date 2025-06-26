@@ -8,7 +8,7 @@
       v-loading="formLoading"
     >
       <el-form-item label="传感器ID" prop="sensorId">
-        <el-input v-model="formData.sensorId" placeholder="请输入传感器ID" />
+        <el-input v-model="formData.sensorId" placeholder="请输入传感器ID" readonly />
       </el-form-item>
       <el-form-item label="数据采集时间" prop="timestamp">
         <el-date-picker
