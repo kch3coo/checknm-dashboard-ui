@@ -62,17 +62,7 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="最新检测时间" prop="lastCheckTime">
-        <el-date-picker
-          v-model="queryParams.lastCheckTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-          class="!w-220px"
-        />
-      </el-form-item>
+
       <el-form-item label="最新检测人员" prop="lastMaintainer">
         <el-input
           v-model="queryParams.lastMaintainer"
@@ -119,7 +109,14 @@
 
   <!-- 列表 -->
   <ContentWrap>
-    <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+    <el-table
+      v-loading="loading"
+      :data="list"
+      :stripe="true"
+      :show-overflow-tooltip="true"
+      highlight-current-row
+      @current-change="handleCurrentChange"
+    >
       <el-table-column label="设备图片" align="center">
         <template #default="{ row }">
           <img
@@ -182,6 +179,14 @@
 
   <!-- 表单弹窗：添加/修改 -->
   <MachineInfoForm ref="formRef" @success="getList" />
+  <!-- 子表的列表 -->
+  <ContentWrap>
+    <el-tabs model-value="machineLocationInfo">
+      <el-tab-pane label="设备位置信息" name="machineLocationInfo">
+        <MachineLocationInfoList :machine-id="currentRow.id" />
+      </el-tab-pane>
+    </el-tabs>
+  </ContentWrap>
 </template>
 
 <script setup lang="ts">
@@ -277,6 +282,12 @@ const handleExport = async () => {
   } finally {
     exportLoading.value = false
   }
+}
+
+/** 选中行操作 */
+const currentRow = ref({}) // 选中行
+const handleCurrentChange = (row) => {
+  currentRow.value = row
 }
 
 /** 初始化 **/

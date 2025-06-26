@@ -13,7 +13,8 @@
       <el-form-item label="数据采集时间" prop="timestamp">
         <el-date-picker
           v-model="formData.timestamp"
-          type="date"
+          type="datetime"
+          format="YYYY-MM-DD HH:mm:ss.SSS"
           value-format="x"
           placeholder="选择数据采集时间"
         />
@@ -77,12 +78,7 @@ const formRef = ref() // 表单 Ref
  * @param sensorId - 传感器 ID，必填
  * @param id       - 如果是 update，就传要编辑的记录 ID；create 时不传
  */
-const open = async (
-  type: 'create' | 'update',
-  taskId: number,
-  sensorId: number,
-  id?: number
-) => {
+const open = async (type: 'create' | 'update', taskId: number, sensorId: number, id?: number) => {
   dialogVisible.value = true
   dialogTitle.value = t('action.' + type)
   formType.value = type

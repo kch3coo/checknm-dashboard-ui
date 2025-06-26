@@ -6,9 +6,6 @@ export interface MachineLocationInfoVO {
   machineId: number // 设备id
   sensorId: number // 传感器id
   locationInfo: string // 设备位置
-  latestResult: number // 最新检测结果
-  lastCheckTime: Date // 最新检测时间
-  lastMaintainer: string // 最新检测人员
   locationImage: number[] // 设备位置图片
 }
 

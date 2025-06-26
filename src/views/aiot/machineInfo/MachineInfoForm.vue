@@ -26,12 +26,6 @@
         <UploadLocalImg v-model="formData.deviceImage" />
       </el-form-item>
     </el-form>
-    <!-- 子表的表单 -->
-    <el-tabs v-model="subTabsName">
-      <el-tab-pane label="设备位置信息" name="machineLocationInfo">
-        <MachineLocationInfoForm ref="machineLocationInfoFormRef" :machine-id="formData.id" />
-      </el-tab-pane>
-    </el-tabs>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -40,8 +34,7 @@
 </template>
 <script setup lang="ts">
 import { MachineInfoApi, MachineInfoVO } from '@/api/aiot/machineInfo'
-import MachineLocationInfoForm from './components/MachineLocationInfoForm.vue'
-
+import { ImageUtils } from '@/utils/ImageUtils'
 /** 设备信息 表单 */
 defineOptions({ name: 'MachineInfoForm' })
 
@@ -59,8 +52,7 @@ const formData = ref({
   productLine: undefined,
   deviceName: undefined,
   deviceType: undefined,
-  deviceImage: undefined,
-  machineLocationInfos: []
+  deviceImage: undefined
 })
 const formRules = reactive({
   companyName: [{ required: true, message: '公司名称不能为空', trigger: 'blur' }],
@@ -68,10 +60,6 @@ const formRules = reactive({
   deviceType: [{ required: true, message: '设备类型不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-
-/** 子表的表单 */
-const subTabsName = ref('machineLocationInfo')
-const machineLocationInfoFormRef = ref()
 
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -96,13 +84,6 @@ const emit = defineEmits(['success']) // 定义 success 事件，用于操作成
 const submitForm = async () => {
   // 校验表单
   await formRef.value.validate()
-  // 校验子表单
-  try {
-    await machineLocationInfoFormRef.value.validate()
-  } catch (e) {
-    subTabsName.value = 'machineLocationInfo'
-    return
-  }
   // 提交请求
   formLoading.value = true
   try {
@@ -114,24 +95,13 @@ const submitForm = async () => {
       productLine: formData.value.productLine!,
       deviceName: formData.value.deviceName!,
       deviceType: formData.value.deviceType!,
-      deviceImage: [], // 占位，后面赋值
-      machineLocationInfos: []
+      deviceImage: [] // 占位，后面赋值
     }
     console.log(machineInfoVO)
 
-    // 获取子表数据并立即转换 locationImage
-    const locationInfos = machineLocationInfoFormRef.value.getData()
-    machineInfoVO.machineLocationInfos = await Promise.all(
-      locationInfos.map(async (info) => {
-        // 转换 Blob -> number[]
-        info.locationImage = await toNumberArray(info.locationImage)
-        return info
-      })
-    )
-
     // 转换 deviceImage
     if (formData.value.deviceImage) {
-      machineInfoVO.deviceImage = await toNumberArray(formData.value.deviceImage)
+      machineInfoVO.deviceImage = await ImageUtils.toNumberArray(formData.value.deviceImage)
     }
 
     if (formType.value === 'create') {
@@ -148,24 +118,6 @@ const submitForm = async () => {
     formLoading.value = false
   }
 }
-async function toNumberArray(img: Blob | string | number[] | null): Promise<number[]> {
-  if (img instanceof Blob) {
-    const buf = await img.arrayBuffer()
-    return Array.from(new Uint8Array(buf))
-  }
-  if (typeof img === 'string') {
-    // 如果带前缀，去掉前缀；否则就当纯 Base64
-    const base64 = img.includes(',') ? img.split(',')[1] : img
-    // atob 解码成二进制串
-    const binStr = atob(base64)
-    // 每个字符的 charCode 就是对应的字节
-    return Array.from(binStr).map((ch) => ch.charCodeAt(0))
-  }
-  if (Array.isArray(img)) {
-    return img
-  }
-  return []
-}
 
 /** 重置表单 */
 const resetForm = () => {
@@ -176,8 +128,7 @@ const resetForm = () => {
     productLine: undefined,
     deviceName: undefined,
     deviceType: undefined,
-    deviceImage: undefined,
-    machineLocationInfos: []
+    deviceImage: undefined
   }
   formRef.value?.resetFields()
 }

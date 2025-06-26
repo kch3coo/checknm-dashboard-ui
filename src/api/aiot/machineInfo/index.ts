@@ -10,7 +10,6 @@ export interface MachineInfoVO {
   deviceName: string // 设备名称
   deviceType: string // 设备类型
   deviceImage: number[] // 设备图片
-  machineLocationInfos: MachineLocationInfoVO[]
 }
 
 // 设备信息 API
@@ -47,10 +46,27 @@ export const MachineInfoApi = {
 
   // ==================== 子表（设备位置信息） ====================
 
-  // 获得设备位置信息列表
-  getMachineLocationInfoListByMachineId: async (machineId) => {
-    return await request.get({
-      url: `/aiot/machine-info/machine-location-info/list-by-machine-id?machineId=` + machineId
-    })
+  // 获得设备位置信息分页
+  getMachineLocationInfoPage: async (params) => {
+    return await request.get({ url: `/aiot/machine-info/machine-location-info/page`, params })
+  },
+  // 新增设备位置信息
+  createMachineLocationInfo: async (data) => {
+    return await request.post({ url: `/aiot/machine-info/machine-location-info/create`, data })
+  },
+
+  // 修改设备位置信息
+  updateMachineLocationInfo: async (data) => {
+    return await request.put({ url: `/aiot/machine-info/machine-location-info/update`, data })
+  },
+
+  // 删除设备位置信息
+  deleteMachineLocationInfo: async (id: number) => {
+    return await request.delete({ url: `/aiot/machine-info/machine-location-info/delete?id=` + id })
+  },
+
+  // 获得设备位置信息
+  getMachineLocationInfo: async (id: number) => {
+    return await request.get({ url: `/aiot/machine-info/machine-location-info/get?id=` + id })
   }
 }
