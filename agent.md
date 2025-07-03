@@ -30,6 +30,8 @@ const { status, data, send, close, open } = useWebSocket(server.value, {
 
 - content: 具体的业务数据内容
 
+自 2025 年起，`content` 字段直接传入对象即可，**无需再使用 `JSON.stringify` 包裹**。
+
 ## 3. 前端可发送的消息
 
 ### 1. 连接指定传感器
