@@ -27,6 +27,51 @@
           确认
         </el-button>
       </el-form-item>
+      <el-form-item label="设备与位置">
+        <el-popover placement="right" trigger="manual" :visible="locationVisible">
+          <template #reference>
+            <el-select
+              ref="machineSelectRef"
+              v-model="formData.machineId"
+              placeholder="请选择设备"
+              filterable
+              remote
+              :remote-method="searchMachine"
+              :loading="machineLoading"
+              automatic-dropdown
+              class="!w-240px"
+              @visible-change="onMachineVisibleChange"
+              @change="onMachineSelect"
+            >
+              <el-option
+                v-for="item in machineList"
+                :key="item.id"
+                :label="item.deviceName"
+                :value="item.id"
+              />
+            </el-select>
+          </template>
+          <el-select
+            ref="locationSelectRef"
+            v-model="formData.machineLocationId"
+            placeholder="请选择位置"
+            :loading="locationLoading"
+            automatic-dropdown
+            class="!w-200px"
+            @change="onLocationSelect"
+          >
+            <el-option
+              v-for="loc in locationList"
+              :key="loc.id"
+              :label="loc.locationInfo"
+              :value="loc.id"
+            />
+          </el-select>
+        </el-popover>
+        <span v-if="selectedMachineName && selectedLocationName" class="ml-10px">
+          {{ selectedMachineName }} / {{ selectedLocationName }}
+        </span>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="toggleConnectStatus">
           <Icon icon="ep:link" class="mr-5px" />
@@ -78,9 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive, watch, computed } from 'vue'
+import { onMounted, ref, reactive, watch, computed, nextTick } from 'vue'
 import { useMessage } from '@/hooks/web/useMessage'
 import { SensorInfoApi, SensorInfoVO } from '@/api/aiot/sensorInfo'
+import { MachineInfoApi, MachineInfoVO } from '@/api/aiot/machineInfo'
+import type { MachineLocationInfoVO } from '@/api/aiot/machineLocationInfo'
+import type { ElSelect } from 'element-plus'
 import { formatDate } from '@/utils/formatTime'
 import type { EChartsOption } from 'echarts'
 import Echart from '@/components/Echart/src/Echart.vue'
@@ -93,8 +141,26 @@ const message = useMessage()
 
 // --- form and state ---
 const sensorList = ref<SensorInfoVO[]>([])
-const formData = reactive({ sensorId: undefined as number | undefined, gatewayMac: '' })
+const formData = reactive({
+  sensorId: undefined as number | undefined,
+  gatewayMac: '',
+  machineId: undefined as number | undefined,
+  machineLocationId: undefined as number | undefined
+})
 const showConfirm = ref(false)
+
+// 设备与位置
+const machineSelectRef = ref<InstanceType<typeof ElSelect>>()
+const locationSelectRef = ref<InstanceType<typeof ElSelect>>()
+const machineList = ref<MachineInfoVO[]>([])
+const machinePage = reactive({ pageNo: 1, pageSize: 10, deviceName: '' })
+const machineTotal = ref(0)
+const machineLoading = ref(false)
+const locationList = ref<MachineLocationInfoVO[]>([])
+const locationLoading = ref(false)
+const locationVisible = ref(false)
+const selectedMachineName = ref('')
+const selectedLocationName = ref('')
 
 const detectionForm = reactive({ recordMethod: 0, recordType: 0, timer: 5 })
 const isRecording = ref(false)
@@ -109,6 +175,78 @@ watch(
     if (val !== 0) detectionForm.recordMethod = 1
   }
 )
+
+// 加载设备列表
+const loadMachineList = async (append = false) => {
+  machineLoading.value = true
+  try {
+    const res = await MachineInfoApi.getMachineInfoPage(machinePage)
+    machineTotal.value = res.total
+    machineList.value = append ? machineList.value.concat(res.list) : res.list
+  } finally {
+    machineLoading.value = false
+  }
+}
+
+const searchMachine = (q: string) => {
+  machinePage.deviceName = q
+  machinePage.pageNo = 1
+  loadMachineList(false)
+}
+
+const handleMachineScroll = async () => {
+  const wrap = machineSelectRef.value?.scrollbar?.wrapRef
+  if (!wrap) return
+  if (
+    wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight <= 0 &&
+    machineList.value.length < machineTotal.value &&
+    !machineLoading.value
+  ) {
+    machinePage.pageNo += 1
+    await loadMachineList(true)
+  }
+}
+
+const onMachineVisibleChange = async (v: boolean) => {
+  if (v) {
+    machinePage.pageNo = 1
+    await loadMachineList(false)
+    await nextTick()
+    const wrap = machineSelectRef.value?.scrollbar?.wrapRef
+    wrap?.addEventListener('scroll', handleMachineScroll)
+  }
+}
+
+const loadLocationList = async (id: number) => {
+  locationLoading.value = true
+  try {
+    const res = await MachineInfoApi.getMachineLocationInfoPage({
+      pageNo: 1,
+      pageSize: 100,
+      machineId: id
+    })
+    locationList.value = res.list || []
+  } finally {
+    locationLoading.value = false
+  }
+}
+
+const onMachineSelect = async (id: number) => {
+  const m = machineList.value.find((i) => i.id === id)
+  selectedMachineName.value = m?.deviceName || ''
+  formData.machineLocationId = undefined
+  selectedLocationName.value = ''
+  await loadLocationList(id)
+  locationVisible.value = true
+  await nextTick()
+  locationSelectRef.value?.focus()
+}
+
+const onLocationSelect = (id: number) => {
+  const loc = locationList.value.find((l) => l.id === id)
+  selectedLocationName.value = loc?.locationInfo || ''
+  locationVisible.value = false
+}
 
 const dataList = ref<any[]>([])
 const graphType = ref<'RMS' | 'RMSMA' | 'PeakToPeak'>('RMS')
@@ -195,6 +333,7 @@ onMounted(async () => {
     formData.sensorId = sensorList.value[0].id
     formData.gatewayMac = sensorList.value[0].gatewayMac
   }
+  await loadMachineList(false)
 })
 
 const onSensorChange = (id: number) => {
@@ -252,7 +391,10 @@ const stopStream = async () => {
   clearInterval(timerInterval)
   isRecording.value = false
   if (await message.confirm('是否保存数据？')) {
-    ws.send({ type: 'aiot-save-data', content: {} })
+    ws.send({
+      type: 'aiot-save-data',
+      content: { machineLocationId: formData.machineLocationId }
+    })
   }
 }
 
