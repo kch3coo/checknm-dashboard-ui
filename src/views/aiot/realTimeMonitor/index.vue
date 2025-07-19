@@ -41,6 +41,28 @@
           <el-button v-else type="warning" @click="stopStream"> 停止检测 </el-button>
           <span class="ml-10px" v-if="isRecording">{{ timerCounter }}</span>
         </el-form-item>
+        <el-form-item label="测量类型">
+          <el-select v-model="detectionForm.recordType" class="!w-120px" placeholder="选择类型">
+            <el-option label="Manual" :value="0" />
+            <el-option label="Before" :value="1" />
+            <el-option label="After" :value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="测量方法">
+          <el-select
+            v-model="detectionForm.recordMethod"
+            class="!w-120px"
+            placeholder="选择方法"
+            :disabled="detectionForm.recordType !== 0"
+          >
+            <el-option label="手动" :value="0" />
+            <el-option label="定时" :value="1" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="detectionForm.recordMethod === 1" label="定时时间">
+          <el-input-number v-model="detectionForm.timer" :min="1" class="!w-120px" />
+          <span class="ml-5px">秒</span>
+        </el-form-item>
       </template>
     </el-form>
   </ContentWrap>
@@ -79,6 +101,15 @@ const isRecording = ref(false)
 const timerCounter = ref(0)
 let timerInterval: any
 
+const isTimerMethod = computed(() => detectionForm.recordMethod === 1)
+
+watch(
+  () => detectionForm.recordType,
+  (val) => {
+    if (val !== 0) detectionForm.recordMethod = 1
+  }
+)
+
 const dataList = ref<any[]>([])
 const graphType = ref<'RMS' | 'RMSMA' | 'PeakToPeak'>('RMS')
 const chartOptions = reactive<EChartsOption>({
@@ -102,8 +133,7 @@ const handleStatus = (s: string) => {
   socketStatus.value = s
 }
 const handleMessage = (raw: string) => {
-  console.log('index 收到信息', raw)
-  if (!raw || raw === 'pong') return
+  console.log('index 收到信息', JSON.parse(raw))
   try {
     const msg = JSON.parse(raw)
     const { type, content } = msg
@@ -116,7 +146,7 @@ const handleMessage = (raw: string) => {
     // 收到测量数据
     if (
       (type === 'aiot-connect-sensor-resp' || type === 'aiot-start-stream-data-resp') &&
-      content?.code === 1060300000
+      content.code === 1060000000
     ) {
       const data = typeof content === 'string' ? JSON.parse(content) : content
       dataList.value.push(data)
@@ -201,13 +231,18 @@ const startStream = () => {
   ws.startStream({
     recordType: detectionForm.recordType,
     recordMethod: detectionForm.recordMethod,
-    timer: detectionForm.recordType === 1 ? detectionForm.timer : 0
+    timer: isTimerMethod.value ? detectionForm.timer : 0
   })
   isRecording.value = true
-  timerCounter.value = detectionForm.recordType === 1 ? detectionForm.timer : 0
+  timerCounter.value = isTimerMethod.value ? detectionForm.timer : 0
   clearInterval(timerInterval)
   timerInterval = setInterval(() => {
-    timerCounter.value += detectionForm.recordType === 0 ? 1 : -1
+    if (isTimerMethod.value) {
+      timerCounter.value--
+      if (timerCounter.value <= 0) stopStream()
+    } else {
+      timerCounter.value++
+    }
   }, 1000)
 }
 
