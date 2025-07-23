@@ -94,19 +94,6 @@ const queryParams = reactive({
   machineId: undefined as unknown
 })
 
-/** 监听主表的关联字段的变化，加载对应的子表数据 */
-watch(
-  () => props.machineId,
-  (val: number) => {
-    if (!val) {
-      return
-    }
-    queryParams.machineId = val
-    handleQuery()
-  },
-  { immediate: true, deep: true }
-)
-
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
@@ -150,4 +137,18 @@ const handleDelete = async (id: number) => {
     await getList()
   } catch {}
 }
+
+/** 监听主表的关联字段的变化，加载对应的子表数据 */
+watch(
+  () => props.machineId,
+  (val) => {
+    console.log('🛠 machineId changed:', val)
+    if (!val) {
+      return
+    }
+    queryParams.machineId = val
+    handleQuery()
+  },
+  { immediate: true, deep: true }
+)
 </script>

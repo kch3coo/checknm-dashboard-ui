@@ -33,14 +33,14 @@ export function useWebSocketClient(options: WebSocketClientOptions = {}) {
     immediate: false,
     // 连接成功时触发
     onConnected: (ws) => {
-      console.log('WebSocket 已连接', ws)
+      // console.log('WebSocket 已连接', ws)
       options.onOpen?.()
     },
     // 连接断开时触发
     onDisconnected: (_ws, event) => {
-      console.log('WebSocket 已断开', event)
-      console.log('关闭代码:', event.code)
-      console.log('关闭原因:', event.reason)
+      // console.log('WebSocket 已断开', event)
+      // console.log('关闭代码:', event.code)
+      // console.log('关闭原因:', event.reason)
       options.onClose?.()
     },
     // 任意错误时触发
@@ -49,7 +49,7 @@ export function useWebSocketClient(options: WebSocketClientOptions = {}) {
     },
     // 原生消息事件
     onMessage: (_ws, ev) => {
-      console.log('WebSocket 收到消息', ev)
+      // console.log('WebSocket 收到消息', ev)
       let raw: string
       if (typeof ev.data === 'string') {
         raw = ev.data
@@ -62,7 +62,7 @@ export function useWebSocketClient(options: WebSocketClientOptions = {}) {
 
   // 统一封装 send
   const send = (msg: any) => {
-    console.log('发送信息： ', msg)
+    // console.log('发送信息： ', msg)
     rawSend(JSON.stringify(msg))
   }
 
@@ -87,7 +87,7 @@ export function useWebSocketClient(options: WebSocketClientOptions = {}) {
 
   // 仍然可以监听 status 做额外处理
   watch(status, (s) => {
-    console.log('WebSocket 状态变更:', s)
+    // console.log('WebSocket 状态变更:', s)
     options.onStatus?.(s)
   })
 

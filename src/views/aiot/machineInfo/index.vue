@@ -183,7 +183,7 @@
   <ContentWrap>
     <el-tabs model-value="machineLocationInfo">
       <el-tab-pane label="设备位置信息" name="machineLocationInfo">
-        <MachineLocationInfoList :machine-id="currentRow.id" />
+        <MachineLocationInfoList :machine-id="currentRow.id" :key="currentRow.id" />
       </el-tab-pane>
     </el-tabs>
   </ContentWrap>
@@ -195,7 +195,7 @@ import download from '@/utils/download'
 import { MachineInfoApi, MachineInfoVO } from '@/api/aiot/machineInfo'
 import MachineInfoForm from './MachineInfoForm.vue'
 import { makeDataUrl } from '@/components/UploadFile/src/uploadImgUtil'
-
+import MachineLocationInfoList from './components/MachineLocationInfoList.vue'
 /** 设备信息 列表 */
 defineOptions({ name: 'MachineInfo' })
 
@@ -285,7 +285,7 @@ const handleExport = async () => {
 }
 
 /** 选中行操作 */
-const currentRow = ref({}) // 选中行
+const currentRow = ref<Partial<MachineInfoVO>>({}) // 选中行
 const handleCurrentChange = (row) => {
   currentRow.value = row
 }

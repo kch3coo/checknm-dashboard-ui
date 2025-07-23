@@ -98,19 +98,6 @@ const queryParams = reactive({
   taskId: undefined as unknown
 })
 
-/** 监听主表的关联字段的变化，加载对应的子表数据 */
-watch(
-  () => props.taskId,
-  (val: number) => {
-    if (!val) {
-      return
-    }
-    queryParams.taskId = val
-    handleQuery()
-  },
-  { immediate: true, deep: true }
-)
-
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
@@ -161,4 +148,17 @@ const handleDelete = async (id: number) => {
     await getList()
   } catch {}
 }
+
+/** 监听主表的关联字段的变化，加载对应的子表数据 */
+watch(
+  () => props.taskId,
+  (val: number) => {
+    if (!val) {
+      return
+    }
+    queryParams.taskId = val
+    handleQuery()
+  },
+  { immediate: true, deep: true }
+)
 </script>
