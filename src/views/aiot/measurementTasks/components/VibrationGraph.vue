@@ -68,12 +68,13 @@ const loadSingleTaskData = async (id: number, keys: string[]) => {
  * @param keys 对应于 ['X','Y','Z'] 三条轴的数据字段名数组
  */
 const loadComparisonData = async (ids: number[], keys: [string, string, string]) => {
-  // 1. 设置 x 轴为数值轴，名称 “秒”
-  chartOptions.xAxis = { type: 'value', name: '秒' }
-  chartOptions.series = []
-  chartOptions.legend!.data = []
+  // 1) 只保留三个图例项
+  const axes = ['X轴', 'Y轴', 'Z轴']
+  chartOptions.legend = {
+    data: axes
+  }
 
-  // 2. 并发拉取每个任务的记录列表
+  // 2) 并发拉全量数据
   const responses = await Promise.all(
     ids.map((id) =>
       MeasurementTasksApi.getVibrationRecordsPage({
@@ -85,32 +86,38 @@ const loadComparisonData = async (ids: number[], keys: [string, string, string])
   )
   const lists = responses.map((r) => r.list || [])
 
-  // 3. 归一化：生成与 lists 一一对应的 normalizedTimeLists
-  const normalizedTimeLists = lists.map((list) => {
-    if (list.length === 0) return [] as number[]
+  // 3) 归一化每个 list，以秒为单位
+  const normalizedTimes = lists.map((list) => {
+    if (!list.length) return []
     const base = list[0].timestamp
-    // 转成秒数并减初始
-    return list.map((item: any) => (item.timestamp - base) / 1000)
+    return list.map((item) => (item.timestamp - base) / 1000)
   })
 
-  // 4. 为每个任务 & 每条轴，生成一条 line series
-  const axes = ['X轴', 'Y轴', 'Z轴']
-  lists.forEach((list, i) => {
-    const times = normalizedTimeLists[i]
-    const taskId = ids[i]
+  // 4) 配色：每个轴两种深浅
+  const colorMap: Record<string, [string, string]> = {
+    X轴: ['#1f78b4', '#a6cee3'],
+    Y轴: ['#33a02c', '#b2df8a'],
+    Z轴: ['#e31a1c', '#fb9a99']
+  }
+
+  // 5) 清空旧数据
+  chartOptions.series = []
+  chartOptions.xAxis = { type: 'value', name: '秒' }
+
+  // 6) 生成 series：同名但不同色
+  lists.forEach((list, ti) => {
+    const times = normalizedTimes[ti]
+    const id = ids[ti]
+
     axes.forEach((axis, ai) => {
-      chartOptions.legend!.data.push(`${taskId}-${axis}`)
       chartOptions.series!.push({
-        name: `${taskId}-${axis}`,
+        name: axis,
         type: 'line',
         smooth: true,
         showSymbol: false,
-        // ECharts value 轴下可以直接用 [x, y] 对
-        data: list.map((item: any, idx: number) => [
-          times[idx],
-          // 根据 axisIdx 取对应字段
-          item[keys[ai]]
-        ])
+        // 指定深浅色，ti=0 用深色，ti=1 用浅色
+        lineStyle: { color: colorMap[axis][ti] },
+        data: list.map((item, idx) => [times[idx], item[keys[ai]]])
       })
     })
   })
