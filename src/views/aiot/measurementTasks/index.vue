@@ -125,11 +125,10 @@
         <el-button
           type="success"
           plain
-          @click="handleExport"
-          :loading="exportLoading"
-          v-hasPermi="['aiot:measurement-tasks:export']"
+          @click="toggleCompare"
         >
-          <Icon icon="ep:download" class="mr-5px" /> 导出
+          <Icon icon="ep:odometer" class="mr-5px" />
+          {{ compareMode ? '完成对比' : '前后量化对比' }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -138,13 +137,17 @@
   <!-- 列表 -->
   <ContentWrap>
     <el-table
+      ref="tableRef"
       v-loading="loading"
       :data="list"
       :stripe="true"
       :show-overflow-tooltip="true"
-      highlight-current-row
-      @current-change="handleCurrentChange"
+      :highlight-current-row="!compareMode"
+      row-key="id"
+      @current-change="onCurrentChange"
+      @select="handleCompareSelect"
     >
+      <el-table-column type="selection" width="55" v-if="compareMode" />
       <el-table-column label="传感器id" align="center" prop="sensorId" />
       <el-table-column label="任务id" align="center" prop="id" />
       <el-table-column label="设备位置id" align="center" prop="machineLocationId" />
@@ -215,12 +218,28 @@
     <el-tabs v-model="activeTab">
       <el-tab-pane label="振动传感记录" name="vibrationRecords">
         <VibrationRecordsList
+          v-if="!compareMode"
+          key="single-records"
           :task-id="currentRow.id"
           :sensor-id="currentRow.sensorId"
         />
+        <VibrationRecordsList
+          v-else
+          key="compare-records"
+          :tasks="selectedTasks"
+        />
       </el-tab-pane>
       <el-tab-pane label="振动图表" name="vibrationGraph">
-        <VibrationGraph :task-id="currentRow.id" />
+        <VibrationGraph
+          v-if="!compareMode"
+          key="single-graph"
+          :task-ids="currentRow.id ? [currentRow.id] : []"
+        />
+        <VibrationGraph
+          v-else
+          key="compare-graph"
+          :task-ids="selectedTasks.map((t) => t.id)"
+        />
       </el-tab-pane>
     </el-tabs>
   </ContentWrap>
@@ -229,7 +248,6 @@
 <script setup lang="ts">
 import { getIntDictOptions, DICT_TYPE } from '@/utils/dict'
 import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
 import { MeasurementTasksApi, MeasurementTasksVO } from '@/api/aiot/measurementTasks'
 import MeasurementTasksForm from './MeasurementTasksForm.vue'
 import VibrationRecordsList from './components/VibrationRecordsList.vue'
@@ -258,8 +276,16 @@ const queryParams = reactive({
   status: undefined
 })
 const queryFormRef = ref() // 搜索的表单
-const exportLoading = ref(false) // 导出的加载中
 const activeTab = ref('vibrationRecords')
+const compareMode = ref(false)
+const selectedTasks = ref<MeasurementTasksVO[]>([])
+const tableRef = ref()
+
+const onCurrentChange = (row: MeasurementTasksVO) => {
+  if (!compareMode.value) {
+    handleCurrentChange(row)
+  }
+}
 
 /** 查询列表 */
 const getList = async () => {
@@ -285,6 +311,38 @@ const resetQuery = () => {
   handleQuery()
 }
 
+const toggleCompare = () => {
+  if (compareMode.value) {
+    compareMode.value = false
+    selectedTasks.value = []
+    currentRow.value = {}
+    tableRef.value?.clearSelection()
+  } else {
+    compareMode.value = true
+    selectedTasks.value = []
+    currentRow.value = {}
+    tableRef.value?.clearSelection()
+  }
+}
+
+const handleCompareSelect = (
+  rows: MeasurementTasksVO[],
+  _row: MeasurementTasksVO
+) => {
+  if (!compareMode.value) return
+  if (!tableRef.value) return
+
+  if (rows.length <= 2) {
+    selectedTasks.value = rows.slice()
+    return
+  }
+
+  const keep = rows.slice(-2)
+  selectedTasks.value = keep
+  tableRef.value?.clearSelection()
+  keep.forEach((r) => tableRef.value?.toggleRowSelection(r, true))
+}
+
 /** 添加/修改操作 */
 const formRef = ref()
 const openForm = (type: string, id?: number) => {
@@ -304,26 +362,13 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
-/** 导出按钮操作 */
-const handleExport = async () => {
-  try {
-    // 导出的二次确认
-    await message.exportConfirm()
-    // 发起导出
-    exportLoading.value = true
-    const data = await MeasurementTasksApi.exportMeasurementTasks(queryParams)
-    download.excel(data, '检测任务记录.xls')
-  } catch {
-  } finally {
-    exportLoading.value = false
-  }
-}
 
 /** 选中行操作 */
 const currentRow = ref<Partial<MeasurementTasksVO>>({}) // 选中行
 const handleCurrentChange = (row) => {
-  currentRow.value = row
-  console.log(currentRow.value)
+  if (!compareMode.value) {
+    currentRow.value = row
+  }
 }
 
 /** 初始化 **/
