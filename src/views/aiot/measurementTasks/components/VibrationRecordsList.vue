@@ -1,24 +1,36 @@
 <template>
   <!-- 列表 -->
   <ContentWrap>
-    <el-button
-      type="primary"
-      plain
-      @click="openForm('create')"
-      v-hasPermi="['aiot:measurement-tasks:create']"
-    >
-      <Icon icon="ep:plus" class="mr-5px" /> 新增
-    </el-button>
-    <el-button
-      v-if="total === 0"
-      type="warning"
-      plain
-      @click="handleImport"
-      v-hasPermi="['aiot:measurement-tasks:create']"
-    >
-      <Icon icon="ep:upload" class="mr-5px" /> 导入
-    </el-button>
-    <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+    <template v-if="!props.tasks || props.tasks.length === 0">
+      <el-button
+        type="primary"
+        plain
+        @click="openForm('create')"
+        v-hasPermi="['aiot:measurement-tasks:create']"
+      >
+        <Icon icon="ep:plus" class="mr-5px" /> 新增
+      </el-button>
+      <el-button
+        v-if="total === 0"
+        type="warning"
+        plain
+        @click="handleImport"
+        v-hasPermi="['aiot:measurement-tasks:create']"
+      >
+        <Icon icon="ep:upload" class="mr-5px" /> 导入
+      </el-button>
+    </template>
+    <template v-if="props.tasks && props.tasks.length > 1">
+      <el-tabs v-model="activeTaskId" class="mb-10px">
+        <el-tab-pane
+          v-for="t in props.tasks"
+          :key="t.id"
+          :label="formatDate(t.startTime)"
+          :name="t.id"
+        />
+      </el-tabs>
+    </template>
+    <el-table v-loading="loading" :data="currentList" :stripe="true" :show-overflow-tooltip="true">
       <el-table-column label="传感器ID" align="center" prop="sensorId" />
 
       <el-table-column
@@ -58,13 +70,15 @@
         </template>
       </el-table-column>
     </el-table>
-    <!-- 分页 -->
-    <Pagination
-      :total="total"
-      v-model:page="queryParams.pageNo"
-      v-model:limit="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <template v-if="!props.tasks || props.tasks.length === 0">
+      <!-- 分页 -->
+      <Pagination
+        :total="total"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+      />
+    </template>
   </ContentWrap>
   <!-- 表单弹窗：添加/修改 -->
   <VibrationRecordsForm ref="formRef" @success="getList" />
@@ -77,8 +91,9 @@
   />
 </template>
 <script setup lang="ts">
-import { dateFormatter } from '@/utils/formatTime'
+import { dateFormatter, formatDate } from '@/utils/formatTime'
 import { MeasurementTasksApi } from '@/api/aiot/measurementTasks'
+import { ref, reactive, computed, watch } from 'vue'
 import VibrationRecordsForm from './VibrationRecordsForm.vue'
 import VibrationRecordsImportForm from './VibrationRecordsImportForm.vue'
 
@@ -88,18 +103,42 @@ const message = useMessage() // 消息弹窗
 const props = defineProps<{
   taskId?: number // 任务ID（主表的关联字段）
   sensorId?: number // 传感器ID（主表字段）
+  tasks?: any[] // 多个任务
 }>()
 const loading = ref(false) // 列表的加载中
 const list = ref([]) // 列表的数据
 const total = ref(0) // 列表的总页数
+const recordsMap = reactive<Record<number, any[]>>({})
+const activeTaskId = ref<number>()
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   taskId: undefined as unknown
 })
+const currentList = computed(() => {
+  if (props.tasks && props.tasks.length) {
+    return recordsMap[activeTaskId.value!] || []
+  }
+  return list.value
+})
+
+const loadTaskRecords = async (taskId: number) => {
+  loading.value = true
+  try {
+    const data = await MeasurementTasksApi.getVibrationRecordsPage({
+      pageNo: 1,
+      pageSize: 1000,
+      taskId
+    })
+    recordsMap[taskId] = data.list || []
+  } finally {
+    loading.value = false
+  }
+}
 
 /** 查询列表 */
 const getList = async () => {
+  if (props.tasks && props.tasks.length) return
   loading.value = true
   try {
     const data = await MeasurementTasksApi.getVibrationRecordsPage(queryParams)
@@ -158,6 +197,19 @@ watch(
     }
     queryParams.taskId = val
     handleQuery()
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  () => props.tasks,
+  (val) => {
+    if (Array.isArray(val) && val.length) {
+      activeTaskId.value = val[0].id
+      val.forEach((t: any) => loadTaskRecords(t.id))
+    } else {
+      activeTaskId.value = undefined
+    }
   },
   { immediate: true, deep: true }
 )
