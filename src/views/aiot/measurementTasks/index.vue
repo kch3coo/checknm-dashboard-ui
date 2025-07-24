@@ -122,11 +122,7 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 新增
         </el-button>
-        <el-button
-          type="success"
-          plain
-          @click="toggleCompare"
-        >
+        <el-button type="success" plain @click="toggleCompare">
           <Icon icon="ep:odometer" class="mr-5px" />
           {{ compareMode ? '完成对比' : '前后量化对比' }}
         </el-button>
@@ -223,11 +219,7 @@
           :task-id="currentRow.id"
           :sensor-id="currentRow.sensorId"
         />
-        <VibrationRecordsList
-          v-else
-          key="compare-records"
-          :tasks="selectedTasks"
-        />
+        <VibrationRecordsList v-else key="compare-records" :tasks="selectedTasks" />
       </el-tab-pane>
       <el-tab-pane label="振动图表" name="vibrationGraph">
         <VibrationGraph
@@ -235,11 +227,7 @@
           key="single-graph"
           :task-ids="currentRow.id ? [currentRow.id] : []"
         />
-        <VibrationGraph
-          v-else
-          key="compare-graph"
-          :task-ids="selectedTasks.map((t) => t.id)"
-        />
+        <VibrationGraph v-else key="compare-graph" :task-ids="selectedTasks.map((t) => t.id)" />
       </el-tab-pane>
     </el-tabs>
   </ContentWrap>
@@ -325,10 +313,7 @@ const toggleCompare = () => {
   }
 }
 
-const handleCompareSelect = (
-  rows: MeasurementTasksVO[],
-  _row: MeasurementTasksVO
-) => {
+const handleCompareSelect = (rows: MeasurementTasksVO[], _row: MeasurementTasksVO) => {
   if (!compareMode.value) return
   if (!tableRef.value) return
 
@@ -361,7 +346,6 @@ const handleDelete = async (id: number) => {
     await getList()
   } catch {}
 }
-
 
 /** 选中行操作 */
 const currentRow = ref<Partial<MeasurementTasksVO>>({}) // 选中行
